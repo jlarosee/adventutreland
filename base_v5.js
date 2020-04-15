@@ -1,15 +1,14 @@
 //
-// Base v5:
-// Better movement (parabolic movement; unstuck) DONE
-// Pots and heals
+// Base v:
+// Better movement (parabolic movement; unstuck)
 
 var attack_mode = true;
 // 0 Don't move at all (will not move even if target is out of range)
 // 1 Standing still (will move if target is out of range),
 // 2 Front of target (Moves to front of target before attacking),
-var mode = 1;
+var mode = 0;
 var passive = true;
-var mtype = 'croc'; //Monster Type of the enemy you want to attack
+var mtype = 'goo'; //Monster Type of the enemy you want to attack
 var angle = null;
 var direction = 1;
 var lines_drawn = 0;
@@ -17,6 +16,7 @@ var max_lines = 5;
 // Ranger: 20
 // Mage: 100??
 var class_distance_offset = 20;
+
 
 setInterval(function(){
     use_hp_or_mp();
@@ -37,6 +37,9 @@ setInterval(function(){
 
         if (target) {
             change_target(target);
+            // var diff_x = character.real_x - target.real_x;
+            // var diff_y = character.real_y - target.real_y;
+            // angle = Math.atan2(diff_y, diff_x);
         } else {
             set_message("No Monsters");
             return;
@@ -63,7 +66,6 @@ setInterval(function () {
         set_message("Attacking");
         attack(target);
     }
-
     //Following/Maintaining Distance
     if (mode == 0) {
 
@@ -98,6 +100,8 @@ setInterval(function () {
             var diff_y = character.real_y - target.real_y;
             angle = Math.atan2(diff_y, diff_x);
             angle = angle + ((Math.PI * 2) * 0.1) * direction;
+            // angle = ((Math.PI * 2) * 0.1);
+            game_log('angle: ' + angle);
             var move_to_x = target.real_x + character.range * Math.cos(angle);
             var move_to_y = target.real_y + character.range * Math.sin(angle);
             var msg = 'Move away from ' + target.name;
@@ -109,15 +113,26 @@ setInterval(function () {
                 direction = direction * -1;
             }
 
+
             moveTo(move_to_x, move_to_y, color, msg);
             draw_line(character.real_x, character.real_y , move_to_x, move_to_y, 2, 0x00ff00);
             lines_drawn++;
+            // if(! can_move_to(move_to_x, move_to_x)) {
+            //     var diff_x = character.real_x - target.real_x;
+            //     var diff_y = character.real_y - target.real_y;
+            //     angle = Math.atan2(diff_x, diff_y);
+            //     game_log('find an angle: ' + angle);
+            //     var move_to_x = target.real_x + character.range * Math.cos(angle);
+            //     var move_to_y = target.real_y + character.range * Math.sin(angle);
+
+            //     moveTo(move_to_x, move_to_y, 0xff0000, 'Moving at new angle: ' + angle);
+            // } else {
+            //     moveTo(move_to_x, move_to_y, 0xff0000, 'Move away from ' + target.name);
+            // }
+
         }
-
     } else if (mode = 2) {
-
         //  Move to target
-
     }
 
     if(lines_drawn > max_lines) {
@@ -125,7 +140,7 @@ setInterval(function () {
         clear_drawings();
     }
 
-    // Heal and restore mana if required
+    //Heal and restore mana if required
     if (character.hp / character.max_hp < 0.4 && new Date() > parent.next_potion) {
         parent.use('hp');
         if (character.hp <= 100) {
@@ -142,10 +157,26 @@ setInterval(function () {
 }, 250); //Loop every 250 milliseconds
 
 function moveTo(x, y, color, msg) {
+    // Line
     draw_line(character.x, character.y , x, y, 1, color);
     lines_drawn++;
+    // Angle change
+    // Log
     game_log(msg);
     move(x, y);
+    // } else {
+    //     // If target changed, calculate the angle between it and you
+    //     x = x + 20;
+    //     y = y + 20;
+    //     angle = Math.atan2(x, y);
+    //     new_x = x * Math.cos(angle) - y * Math.sin(angle);
+    //     new_y = y * Math.cos(angle) + x * Math.sin(angle);
+    //     game_log("STUCK..");
+    //     // Line
+    //     draw_line(character.x, character.y , new_x, new_y, 1, 0xfff000);
+    //     lines_drawn++;
+    //     move(x, y);
+    // }
 }
 
 setInterval(function() {
@@ -172,7 +203,7 @@ function init_xptimer(minref) {
         overflow: 'hidden',
         marginBottom: '-5px'
     });
-    // vertical centering in css is fun
+    //vertical centering in css is fun
     let xptimer = $('<div id="xptimercontent"></div>')
         .css({
           display: 'table-cell',
